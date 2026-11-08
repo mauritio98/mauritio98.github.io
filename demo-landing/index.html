@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Espiga · Artisan Bakery (demo)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --brown: #6b3f22; --cream: #fbf5ec; --gold: #d9a441; }
+    body { background: var(--cream); color: #3a2a1f; }
+    .navbar { background: var(--brown); }
+    .hero {
+      background: linear-gradient(rgba(60,35,18,.65), rgba(60,35,18,.65)),
+                  radial-gradient(circle at 30% 30%, #c98b4e, #6b3f22);
+      color: #fff; padding: 120px 0;
+    }
+    .hero h1 { font-weight: 800; font-size: clamp(2.4rem, 6vw, 4rem); }
+    .btn-gold { background: var(--gold); color: #3a2a1f; font-weight: 700; border: 0; }
+    .btn-gold:hover { background: #c79230; }
+    .product { border: 0; border-radius: 16px; box-shadow: 0 10px 25px rgba(107,63,34,.12); transition: transform .2s; }
+    .product:hover { transform: translateY(-4px); }
+    .product .emoji { font-size: 3.5rem; }
+    .price { color: var(--brown); font-weight: 800; }
+    section { padding: 80px 0; }
+    .section-title { color: var(--brown); font-weight: 800; }
+    .hours li { display: flex; justify-content: space-between; border-bottom: 1px dashed #d8c7b3; padding: 8px 0; }
+    .demo-badge { position: fixed; bottom: 14px; right: 14px; z-index: 99; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-md navbar-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">🥖 La Espiga</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="#visit">Visit us</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero text-center">
+    <div class="container">
+      <p class="text-uppercase fw-semibold mb-2" style="letter-spacing:.2em">Since 1987</p>
+      <h1>Fresh bread, baked every morning</h1>
+      <p class="lead my-4">Traditional sourdough, pastries and cakes made by hand in our neighbourhood bakery.</p>
+      <a href="#products" class="btn btn-gold btn-lg px-4">See our products</a>
+    </div>
+  </header>
+
+  <section id="products">
+    <div class="container">
+      <h2 class="section-title text-center mb-5">Our favourites</h2>
+      <div class="row g-4">
+        <div class="col-sm-6 col-lg-3">
+          <div class="card product h-100 text-center p-4">
+            <div class="emoji">🍞</div>
+            <h5 class="mt-3">Sourdough loaf</h5>
+            <p class="text-muted small">48-hour fermentation, crunchy crust.</p>
+            <p class="price mb-0">€3.80</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card product h-100 text-center p-4">
+            <div class="emoji">🥐</div>
+            <h5 class="mt-3">Butter croissant</h5>
+            <p class="text-muted small">Made with French butter, baked at 6 am.</p>
+            <p class="price mb-0">€1.60</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card product h-100 text-center p-4">
+            <div class="emoji">🎂</div>
+            <h5 class="mt-3">Custom cakes</h5>
+            <p class="text-muted small">Birthdays and events, order 48 h ahead.</p>
+            <p class="price mb-0">from €22</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card product h-100 text-center p-4">
+            <div class="emoji">🍪</div>
+            <h5 class="mt-3">Homemade cookies</h5>
+            <p class="text-muted small">Chocolate, oat and almond.</p>
+            <p class="price mb-0">€0.90</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="visit" class="bg-white">
+    <div class="container">
+      <div class="row g-5 align-items-center">
+        <div class="col-md-6">
+          <h2 class="section-title mb-4">Visit us</h2>
+          <p>Come and grab your bread still warm. We also have coffee and a small terrace.</p>
+          <p class="mb-0">📍 Example Street 12 · 📞 +00 000 000 000</p>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled hours">
+            <li><span>Monday – Friday</span><strong>7:00 – 20:00</strong></li>
+            <li><span>Saturday</span><strong>8:00 – 14:00</strong></li>
+            <li><span>Sunday</span><strong>Closed</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="container" style="max-width:640px">
+      <h2 class="section-title text-center mb-4">Order a cake</h2>
+      <form id="orderForm" novalidate>
+        <div class="mb-3">
+          <label for="name" class="form-label">Name</label>
+          <input type="text" class="form-control" id="name" required minlength="2">
+          <div class="invalid-feedback">Please enter your name.</div>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" required>
+          <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+        <div class="mb-3">
+          <label for="date" class="form-label">Pick-up date</label>
+          <input type="date" class="form-control" id="date" required>
+          <div class="invalid-feedback">Choose a date at least 2 days from today.</div>
+        </div>
+        <div class="mb-3">
+          <label for="msg" class="form-label">What would you like?</label>
+          <textarea class="form-control" id="msg" rows="3" required></textarea>
+          <div class="invalid-feedback">Tell us a bit about your order.</div>
+        </div>
+        <button type="submit" class="btn btn-gold w-100 py-2">Send order</button>
+        <div id="ok" class="alert alert-success mt-3 d-none">Thanks! We'll confirm your order by email. (Demo only, nothing was sent.)</div>
+      </form>
+    </div>
+  </section>
+
+  <footer class="text-center py-4 text-white" style="background:var(--brown)">
+    <small>La Espiga is a fictional bakery · Demo built by <a href="../" class="text-white">Mauricio Batista</a></small>
+  </footer>
+
+  <a href="../" class="btn btn-dark btn-sm demo-badge">← Back to portfolio</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Form validation: the date must be at least 2 days from today
+    const form = document.getElementById('orderForm');
+    const dateInput = document.getElementById('date');
+
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 2);
+    dateInput.min = minDate.toISOString().split('T')[0];
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (form.checkValidity()) {
+        document.getElementById('ok').classList.remove('d-none');
+        form.reset();
+        form.classList.remove('was-validated');
+      } else {
+        form.classList.add('was-validated');
+      }
+    });
+  </script>
+</body>
+</html>
