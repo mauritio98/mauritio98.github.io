@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- BUG 1: no viewport meta tag, so phones render the page as a zoomed-out desktop page -->
+  <title>Bloom &amp; Co. Florist (before)</title>
+  <style>
+    body { margin: 0; font-family: Georgia, serif; color: #333; background: #fff; }
+
+    /* BUG 2: fixed width, the page is always 1200px wide and scrolls sideways on mobile */
+    .container { width: 1200px; margin: 0 auto; }
+
+    header { background: #2f4a3a; color: #fff; padding: 20px 0; }
+    .logo { float: left; font-size: 28px; font-weight: bold; }
+    /* BUG 3: links never wrap, they overflow the screen on small devices */
+    nav { float: right; white-space: nowrap; }
+    nav a { color: #fff; text-decoration: none; margin-left: 40px; font-size: 18px; }
+    header:after { content: ""; display: block; clear: both; }
+
+    .hero { background: linear-gradient(135deg, #f6d6dc, #f9efe6); padding: 120px 0; text-align: center; }
+    /* BUG 4: huge fixed font size that breaks into ugly lines on mobile */
+    .hero h1 { font-size: 72px; margin: 0 0 20px; }
+    .hero p { font-size: 20px; }
+
+    /* BUG 5: buttons with different heights and misaligned baselines */
+    .btn { background: #2f4a3a; color: #fff; padding: 14px 28px; text-decoration: none; display: inline-block; }
+    .btn-outline { border: 3px solid #2f4a3a; color: #2f4a3a; padding: 8px 20px; vertical-align: top; }
+
+    .products { padding: 60px 0; }
+    .products h2 { text-align: center; font-size: 40px; }
+    /* BUG 6: floated cards with fixed widths, they overflow and the section collapses */
+    .card { float: left; width: 360px; margin: 0 20px; background: #f7f3ee; padding: 30px; text-align: center; }
+    .card .emoji { font-size: 60px; }
+
+    .contact { background: #2f4a3a; color: #fff; padding: 60px 0; clear: both; }
+    .contact input, .contact textarea { width: 500px; padding: 12px; margin-bottom: 12px; display: block; }
+    .msg { display: none; background: #dff3e4; color: #1d5e33; padding: 12px; width: 500px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="logo">🌸 Bloom &amp; Co.</div>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#products">Bouquets</a>
+        <a href="#">Weddings</a>
+        <a href="#">About us</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Fresh flowers for every moment</h1>
+      <p>Handmade bouquets delivered the same day in your city.</p>
+      <a href="#products" class="btn">Shop bouquets</a>
+      <a href="#contact" class="btn btn-outline">Contact us</a>
+    </div>
+  </section>
+
+  <section class="products" id="products">
+    <div class="container">
+      <h2>Our bestsellers</h2>
+      <div class="card"><div class="emoji">💐</div><h3>Spring Mix</h3><p>€35</p></div>
+      <div class="card"><div class="emoji">🌹</div><h3>Red Roses</h3><p>€45</p></div>
+      <div class="card"><div class="emoji">🌻</div><h3>Sunflowers</h3><p>€30</p></div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="container">
+      <h2>Order a bouquet</h2>
+      <form id="order-form">
+        <input type="text" id="name" placeholder="Your name">
+        <input type="text" id="email" placeholder="Your email">
+        <textarea id="message" rows="4" placeholder="What would you like?"></textarea>
+        <button type="submit">Send</button>
+      </form>
+      <div class="msg" id="msg">Thanks! We'll contact you soon.</div>
+    </div>
+  </section>
+
+  <script>
+    // BUG 7: wrong id ("orderForm" instead of "order-form"), so this throws an error,
+    // the form reloads the page and the user never sees a confirmation message
+    document.getElementById('orderForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      document.getElementById('msg').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- FIX 1: viewport meta tag so the page adapts to the phone width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloom &amp; Co. Florist (after)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, serif; color: #333; background: #fff; }
+
+    /* FIX 2: flexible width with a maximum, never wider than the screen */
+    .container { width: min(1100px, 92%); margin: 0 auto; }
+
+    /* FIX 3: flexbox header with a mobile menu */
+    header { background: #2f4a3a; color: #fff; }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .logo { font-size: 26px; font-weight: bold; }
+    nav { display: flex; gap: 32px; }
+    nav a { color: #fff; text-decoration: none; font-size: 17px; }
+    .menu-btn { display: none; background: none; border: 0; color: #fff; font-size: 28px; cursor: pointer; }
+
+    .hero { background: linear-gradient(135deg, #f6d6dc, #f9efe6); padding: clamp(60px, 12vw, 120px) 0; text-align: center; }
+    /* FIX 4: font size scales between a minimum and a maximum */
+    .hero h1 { font-size: clamp(34px, 7vw, 68px); line-height: 1.1; margin: 0 0 20px; }
+    .hero p { font-size: clamp(17px, 2.5vw, 20px); }
+
+    /* FIX 5: both buttons share the same padding, border and alignment */
+    .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn { display: inline-block; padding: 14px 28px; border: 2px solid #2f4a3a; text-decoration: none; font-size: 16px; }
+    .btn-primary { background: #2f4a3a; color: #fff; }
+    .btn-outline { background: transparent; color: #2f4a3a; }
+
+    .products { padding: 60px 0; }
+    .products h2 { text-align: center; font-size: clamp(28px, 5vw, 40px); }
+    /* FIX 6: CSS grid that goes from 3 columns to 1 automatically */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .card { background: #f7f3ee; padding: 30px; text-align: center; border-radius: 12px; }
+    .card .emoji { font-size: 60px; }
+
+    .contact { background: #2f4a3a; color: #fff; padding: 60px 0; }
+    form { max-width: 520px; }
+    .contact input, .contact textarea { width: 100%; padding: 12px; margin-bottom: 6px; border: 2px solid transparent; border-radius: 6px; font: inherit; }
+    .contact input.invalid, .contact textarea.invalid { border-color: #ff8a80; }
+    .error { color: #ffcdd2; font-size: 14px; min-height: 18px; margin-bottom: 8px; }
+    .contact button { padding: 12px 28px; border: 0; border-radius: 6px; background: #f6d6dc; color: #2f4a3a; font-weight: bold; cursor: pointer; }
+    .msg { display: none; background: #dff3e4; color: #1d5e33; padding: 12px; border-radius: 6px; margin-top: 12px; max-width: 520px; }
+
+    /* Mobile layout */
+    @media (max-width: 760px) {
+      .menu-btn { display: block; }
+      nav {
+        display: none; position: absolute; top: 72px; left: 0; right: 0;
+        flex-direction: column; gap: 0; background: #2f4a3a;
+      }
+      nav a { padding: 16px 4%; border-top: 1px solid rgba(255,255,255,.15); }
+      nav.open { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-inner">
+      <div class="logo">🌸 Bloom &amp; Co.</div>
+      <button class="menu-btn" aria-label="Open menu">☰</button>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#products">Bouquets</a>
+        <a href="#">Weddings</a>
+        <a href="#">About us</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Fresh flowers for every moment</h1>
+      <p>Handmade bouquets delivered the same day in your city.</p>
+      <div class="buttons">
+        <a href="#products" class="btn btn-primary">Shop bouquets</a>
+        <a href="#contact" class="btn btn-outline">Contact us</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="products" id="products">
+    <div class="container">
+      <h2>Our bestsellers</h2>
+      <div class="grid">
+        <div class="card"><div class="emoji">💐</div><h3>Spring Mix</h3><p>€35</p></div>
+        <div class="card"><div class="emoji">🌹</div><h3>Red Roses</h3><p>€45</p></div>
+        <div class="card"><div class="emoji">🌻</div><h3>Sunflowers</h3><p>€30</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="container">
+      <h2>Order a bouquet</h2>
+      <form id="order-form" novalidate>
+        <input type="text" id="name" placeholder="Your name">
+        <div class="error" id="name-error"></div>
+        <input type="email" id="email" placeholder="Your email">
+        <div class="error" id="email-error"></div>
+        <textarea id="message" rows="4" placeholder="What would you like?"></textarea>
+        <div class="error" id="message-error"></div>
+        <button type="submit">Send</button>
+      </form>
+      <div class="msg" id="msg">Thanks! We'll contact you soon. (Demo only, nothing was sent.)</div>
+    </div>
+  </section>
+
+  <script>
+    // FIX 3: the mobile menu opens and closes
+    const menuBtn = document.querySelector('.menu-btn');
+    const nav = document.querySelector('nav');
+    menuBtn.addEventListener('click', () => nav.classList.toggle('open'));
+    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
+
+    // FIX 7: correct id, plus simple validation with clear error messages
+    const form = document.getElementById('order-form');
+
+    function check(id, isValid, text) {
+      const field = document.getElementById(id);
+      const error = document.getElementById(id + '-error');
+      field.classList.toggle('invalid', !isValid);
+      error.textContent = isValid ? '' : text;
+      return isValid;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      const ok = [
+        check('name', name.length >= 2, 'Please enter your name.'),
+        check('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), 'Please enter a valid email.'),
+        check('message', message.length >= 5, 'Tell us a bit about your order.')
+      ].every(Boolean);
+
+      if (ok) {
+        document.getElementById('msg').style.display = 'block';
+        form.reset();
+      }
+    });
+  </script>
+</body>
+</html>
