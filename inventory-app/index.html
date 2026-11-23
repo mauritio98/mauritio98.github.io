@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory Mini App</title>
+<style>
+  /* ---------- Basic layout ---------- */
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #6b7785;
+    --border: #dde1e6;
+    --accent: #2563eb;
+    --ok: #15803d;
+    --low: #b45309;
+    --out: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  .subtitle { margin: 0 0 20px; color: var(--muted); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  h2 { margin: 0 0 12px; font-size: 1.05rem; }
+
+  /* ---------- Form ---------- */
+  form.add { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: end; }
+  label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+  input[type="text"], input[type="number"], input[type="search"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+  }
+  button {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:hover { background: #eef2f7; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: #1d4ed8; }
+  button.danger { color: var(--out); }
+  .error { color: var(--out); font-size: 0.85rem; min-height: 1.2em; margin: 8px 0 0; }
+
+  /* ---------- Low stock alert ---------- */
+  .alert {
+    border: 1px solid #f5c26b;
+    background: #fff7e6;
+    color: #7a4b00;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .alert[hidden] { display: none; }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* ---------- Toolbar + table ---------- */
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .toolbar input[type="search"] { flex: 1 1 220px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+  td.num { text-align: right; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge.ok  { background: #dcfce7; color: var(--ok); }
+  .badge.low { background: #fef3c7; color: var(--low); }
+  .badge.out { background: #fee2e2; color: var(--out); }
+  .row-actions { display: flex; gap: 6px; align-items: center; }
+  .row-actions input[type="number"] { width: 70px; padding: 6px 8px; }
+  .empty { text-align: center; color: var(--muted); padding: 24px 0; }
+  .footer-note { color: var(--muted); font-size: 0.8rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Inventory Mini App</h1>
+  <p class="subtitle">Add products, adjust stock, search, and get alerts when stock is low. Data is saved in your browser.</p>
+
+  <!-- Low stock alert (hidden when everything is fine) -->
+  <div id="alert" class="alert" hidden></div>
+
+  <!-- Add product form -->
+  <section class="card">
+    <h2>Add product</h2>
+    <form id="add-form" class="add" autocomplete="off">
+      <div>
+        <label for="sku">SKU</label>
+        <input id="sku" type="text" maxlength="30" placeholder="e.g. TX-001">
+      </div>
+      <div>
+        <label for="name">Product name</label>
+        <input id="name" type="text" maxlength="80" placeholder="e.g. Cotton fabric 150cm">
+      </div>
+      <div>
+        <label for="qty">Stock</label>
+        <input id="qty" type="number" min="0" step="1" value="0">
+      </div>
+      <div>
+        <label for="min">Minimum stock</label>
+        <input id="min" type="number" min="0" step="1" value="5">
+      </div>
+      <div>
+        <button class="primary" type="submit">Add product</button>
+      </div>
+    </form>
+    <p id="form-error" class="error" role="alert"></p>
+  </section>
+
+  <!-- Product list -->
+  <section class="card">
+    <h2>Products</h2>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search by name or SKU...">
+      <button id="sample-btn" type="button">Load sample data</button>
+      <button id="export-btn" type="button">Export CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Product</th>
+            <th class="num">Stock</th>
+            <th class="num">Min.</th>
+            <th>Status</th>
+            <th>Adjust</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p id="count" class="footer-note"></p>
+  </section>
+</main>
+
+<script>
+/* ==========================================================
+   Inventory Mini App
+   - Plain JavaScript, no libraries.
+   - State lives in the `products` array and is saved to localStorage.
+   - Every change calls render(), which redraws the table from the state.
+   ========================================================== */
+
+const STORAGE_KEY = "inventory-mini-app-v1";
+
+/** @type {{id:string, sku:string, name:string, qty:number, min:number}[]} */
+let products = loadProducts();
+
+/* ---------- Storage helpers ---------- */
+
+// Read products from localStorage. If it fails (blocked storage, bad JSON), start empty.
+function loadProducts() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+// Save the current list. Wrapped in try/catch so the app keeps working without storage.
+function saveProducts() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  } catch (err) {
+    /* storage unavailable: the app still works, data just won't persist */
+  }
+}
+
+/* ---------- Business rules ---------- */
+
+// Returns "out", "low" or "ok" depending on stock vs. minimum.
+function getStatus(p) {
+  if (p.qty <= 0) return "out";
+  if (p.qty <= p.min) return "low";
+  return "ok";
+}
+
+const STATUS_LABEL = { ok: "OK", low: "Low stock", out: "Out of stock" };
+
+// Make a simple unique id for each product.
+function newId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// Convert any input value into a whole number >= 0 (or NaN if invalid).
+function toCount(value) {
+  if (String(value).trim() === "") return NaN; // an empty field is not a valid number
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 ? n : NaN;
+}
+
+/* ---------- Actions that change the state ---------- */
+
+function addProduct(sku, name, qty, min) {
+  sku = sku.trim();
+  name = name.trim();
+
+  if (!sku || !name) return "SKU and product name are required.";
+  if (Number.isNaN(qty) || Number.isNaN(min)) return "Stock and minimum must be whole numbers (0 or more).";
+  if (products.some(p => p.sku.toLowerCase() === sku.toLowerCase())) {
+    return "That SKU already exists.";
+  }
+
+  products.push({ id: newId(), sku, name, qty, min });
+  saveProducts();
+  render();
+  return "";
+}
+
+// Change stock by `delta` (positive or negative). Stock can never go below 0.
+function adjustStock(id, delta) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  p.qty = Math.max(0, p.qty + delta);
+  saveProducts();
+  render();
+}
+
+function deleteProduct(id) {
+  products = products.filter(p => p.id !== id);
+  saveProducts();
+  render();
+}
+
+function loadSampleData() {
+  const sample = [
+    ["TX-001", "Cotton fabric 150cm", 40, 10],
+    ["TX-002", "Linen fabric 140cm", 6, 8],
+    ["TX-003", "Thread spool (white)", 0, 20],
+    ["TX-004", "Zipper 20cm", 120, 30],
+  ];
+  sample.forEach(([sku, name, qty, min]) => {
+    if (!products.some(p => p.sku === sku)) {
+      products.push({ id: newId(), sku, name, qty, min });
+    }
+  });
+  saveProducts();
+  render();
+}
+
+/* ---------- Export ---------- */
+
+// Wrap a value in quotes so commas/quotes inside it don't break the CSV.
+// A leading = + - @ is prefixed with ' so spreadsheets don't run it as a formula.
+function csvCell(value) {
+  let s = String(value);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+function exportCsv() {
+  const header = ["SKU", "Product", "Stock", "Minimum", "Status"];
+  const lines = [header.map(csvCell).join(",")];
+  products.forEach(p => {
+    lines.push([p.sku, p.name, p.qty, p.min, STATUS_LABEL[getStatus(p)]].map(csvCell).join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inventory.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- Rendering ---------- */
+
+const rowsEl = document.getElementById("rows");
+const alertEl = document.getElementById("alert");
+const countEl = document.getElementById("count");
+const searchEl = document.getElementById("search");
+
+// Small helper to create an element with optional text and class.
+function el(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text; // textContent avoids HTML injection
+  if (className) node.className = className;
+  return node;
+}
+
+function render() {
+  renderAlert();
+  renderTable();
+}
+
+// Show a warning listing every product that is low or out of stock.
+function renderAlert() {
+  const problems = products.filter(p => getStatus(p) !== "ok");
+  alertEl.replaceChildren();
+  if (problems.length === 0) {
+    alertEl.hidden = true;
+    return;
+  }
+  alertEl.hidden = false;
+  alertEl.appendChild(el("strong", problems.length + " product(s) need restocking:"));
+  alertEl.appendChild(
+    el("span", problems.map(p => p.name + " (" + p.qty + ")").join(", "))
+  );
+}
+
+function renderTable() {
+  const term = searchEl.value.trim().toLowerCase();
+  const visible = products.filter(p =>
+    p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
+  );
+
+  rowsEl.replaceChildren();
+
+  if (visible.length === 0) {
+    const tr = el("tr");
+    const td = el("td", products.length ? "No products match your search." : "No products yet. Add one above or load the sample data.", "empty");
+    td.colSpan = 6;
+    tr.appendChild(td);
+    rowsEl.appendChild(tr);
+  }
+
+  visible.forEach(p => rowsEl.appendChild(buildRow(p)));
+  countEl.textContent = visible.length + " of " + products.length + " product(s) shown";
+}
+
+// Build one table row, including its buttons.
+function buildRow(p) {
+  const tr = el("tr");
+  const status = getStatus(p);
+
+  tr.appendChild(el("td", p.sku));
+  tr.appendChild(el("td", p.name));
+  tr.appendChild(el("td", String(p.qty), "num"));
+  tr.appendChild(el("td", String(p.min), "num"));
+
+  const statusCell = el("td");
+  statusCell.appendChild(el("span", STATUS_LABEL[status], "badge " + status));
+  tr.appendChild(statusCell);
+
+  // Actions: -1, +1, custom amount, delete
+  const actions = el("td");
+  const box = el("div", undefined, "row-actions");
+
+  const minus = el("button", "-1");
+  minus.type = "button";
+  minus.title = "Remove one unit";
+  minus.addEventListener("click", () => adjustStock(p.id, -1));
+
+  const plus = el("button", "+1");
+  plus.type = "button";
+  plus.title = "Add one unit";
+  plus.addEventListener("click", () => adjustStock(p.id, 1));
+
+  // Custom amount: positive adds stock, negative removes it (e.g. -5).
+  const amount = el("input");
+  amount.type = "number";
+  amount.step = "1";
+  amount.placeholder = "±qty";
+  amount.setAttribute("aria-label", "Custom adjustment for " + p.name);
+
+  const apply = el("button", "Apply");
+  apply.type = "button";
+  apply.addEventListener("click", () => {
+    const delta = Number(amount.value);
+    if (Number.isInteger(delta) && delta !== 0) adjustStock(p.id, delta);
+  });
+
+  // Delete needs two clicks so it can't be done by accident.
+  const del = el("button", "Delete", "danger");
+  del.type = "button";
+  del.addEventListener("click", () => {
+    if (del.dataset.armed === "1") {
+      deleteProduct(p.id);
+    } else {
+      del.dataset.armed = "1";
+      del.textContent = "Sure?";
+      setTimeout(() => { del.dataset.armed = ""; del.textContent = "Delete"; }, 3000);
+    }
+  });
+
+  box.append(minus, plus, amount, apply, del);
+  actions.appendChild(box);
+  tr.appendChild(actions);
+  return tr;
+}
+
+/* ---------- Event wiring ---------- */
+
+document.getElementById("add-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const errorEl = document.getElementById("form-error");
+
+  const message = addProduct(
+    document.getElementById("sku").value,
+    document.getElementById("name").value,
+    toCount(document.getElementById("qty").value),
+    toCount(document.getElementById("min").value)
+  );
+
+  errorEl.textContent = message;
+  if (!message) {
+    event.target.reset();
+    document.getElementById("qty").value = 0;
+    document.getElementById("min").value = 5;
+    document.getElementById("sku").focus();
+  }
+});
+
+searchEl.addEventListener("input", renderTable);
+document.getElementById("sample-btn").addEventListener("click", loadSampleData);
+document.getElementById("export-btn").addEventListener("click", exportCsv);
+
+// First draw when the page opens.
+render();
+</script>
+</body>
+</html>
